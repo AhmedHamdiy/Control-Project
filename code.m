@@ -74,12 +74,54 @@ for k = 1:length(transfer_functions)
 end
 
 % Stability analysis
-P = pole(tf_H2_Qin);
+P = pole(tf(sys(4)));
 fprintf('\n\n\nPoles of H2/Qin: P0 = %.4f, P1 = %.4f\n', P(1), P(2));
-is_stable = isstable(tf_H2_Qin);
+is_stable = isstable(tf(sys(4)));
 fprintf('Is stable: %d\n', is_stable);
 
 figure;
-pzmap(tf_H2_Qin);
+pzmap(tf(sys(4)));
 title('Pole-Zero Map of H2/Qin');
 grid on;
+
+% Simulate response to a step input (1 m^3/s)
+t = linspace(0, 500, 10000);  % 10,000 samples over 100 seconds
+u = ones(size(t));           % Step input of 1 m^3/s
+
+[y, t_out, x] = lsim(sys, u, t);
+
+% Plot h1
+figure;
+plot(t_out, y(:,3), 'b', 'LineWidth', 1.5); grid on;
+title('h1 (m)');
+xlabel('Time (s)');
+ylabel('h1');
+
+% Plot h2
+figure;
+plot(t_out, y(:,4), 'r', 'LineWidth', 1.5); grid on;
+title('h2 (m)');
+xlabel('Time (s)');
+ylabel('h2');
+
+% Plot Q1
+figure;
+plot(t_out, y(:,2), 'g', 'LineWidth', 1.5); grid on;
+title('Q1 (m^3/s)');
+xlabel('Time (s)');
+ylabel('Q1');
+
+% Plot Q2
+figure;
+plot(t_out, y(:,1), 'm', 'LineWidth', 1.5); grid on;
+title('Q2 (m^3/s)');
+xlabel('Time (s)');
+ylabel('Q2');
+
+% Calculate steady-state values
+steady_state_values = y(end, :);
+fprintf('\nSteady-state values:\n');
+fprintf('h1 = %.4f m\n', steady_state_values(3));
+fprintf('h2 = %.4f m\n', steady_state_values(4));
+fprintf('Q1 = %.4f m^3/s\n', steady_state_values(2));
+fprintf('Q2 = %.4f m^3/s\n', steady_state_values(1));
