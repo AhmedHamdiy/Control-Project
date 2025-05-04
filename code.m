@@ -158,3 +158,38 @@ fprintf('Settling time: %.4f seconds\n', info.SettlingTime);
 % Steady-state error
 ess = abs(5 - h2_response(end));
 fprintf('Steady-state error (ess): %.4f meters\n', ess);
+
+
+% adding the controller to the system
+
+Kp_values = [1, 10, 100];
+hd = 5 * ones(size(t));  % Desired height
+
+for i = 1:length(Kp_values)
+    Kp = Kp_values(i);
+    
+    % Closed-loop transfer function with proportional controller
+    sys_cl = feedback(Kp * tf(sys(4)), 1);
+    
+    % Simulate response
+    [h2_response, t_out] = lsim(sys_cl, hd, t);
+    
+    % Plot response
+    figure;
+    plot(t_out, h2_response, 'LineWidth', 2);
+    grid on;
+    title(sprintf('h2 Response with Kp = %d', Kp));
+    xlabel('Time (s)');
+    ylabel('h2 (m)');
+    
+    % Step response characteristics
+    info = stepinfo(h2_response, t_out, 5);  % Final value = 5
+    ess = abs(5 - h2_response(end));         % Steady-state error
+    
+    fprintf('\n\n--- Kp = %d ---\n', Kp);
+    fprintf('Rise Time: %.4f s\n', info.RiseTime);
+    fprintf('Peak Time: %.4f s\n', info.PeakTime);
+    fprintf('Overshoot: %.2f %%\n', info.Overshoot);
+    fprintf('Settling Time: %.4f s\n', info.SettlingTime);
+    fprintf('Steady-State Error: %.4f m\n', ess);
+end
